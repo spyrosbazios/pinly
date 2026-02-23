@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-const COMMANDS = ["add", "ls", "open", "rm", "cp", "cleanup"] as const;
+const COMMANDS = ["add", "ls", "open", "rm", "cp", "cleanup", "tui"] as const;
 
 function parseArgs(argv: string[]): { command: string; args: Record<string, string | boolean>; positional: string[] } {
   const args: Record<string, string | boolean> = {};
@@ -49,6 +49,7 @@ Commands:
   rm      Remove a pin by id or path
   cp      Copy pin URL to clipboard by id or path
   cleanup Remove all .pinly directories under base dir (with confirmation)
+  tui     Dashboard TUI: list pins, ↑/↓ navigate, Enter open, q quit
 
 Options (global):
   --dir, -d <path>   Target directory (default: cwd). Pins live under <dir>/.pinly/
@@ -206,6 +207,11 @@ async function main(): Promise<void> {
     }
     const { runRm } = await import("./rm");
     await runRm({ dir: args.dir as string | undefined, target });
+    return;
+  }
+
+  if (normalizedCommand === "tui") {
+    await import("./tui");
     return;
   }
 

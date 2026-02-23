@@ -11,5 +11,9 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@rezi-ui/core": "^0.1.0-alpha.31",
+    "@rezi-ui/node": "^0.1.0-alpha.31"
   }
 }

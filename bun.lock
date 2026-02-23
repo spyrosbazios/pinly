@@ -4,6 +4,10 @@
   "workspaces": {
     "": {
       "name": "pinly",
+      "dependencies": {
+        "@rezi-ui/core": "^0.1.0-alpha.31",
+        "@rezi-ui/node": "^0.1.0-alpha.31",
+      },
       "devDependencies": {
         "@types/bun": "latest",
       },
@@ -13,6 +17,12 @@
     },
   },
   "packages": {
+    "@rezi-ui/core": ["@rezi-ui/core@0.1.0-alpha.31", "", {}, "sha512-mSIKYuLPxI4wQldnn7H+lFQD4VuZabNZ+6FNycflUU82TV0jhW1bSQwboFLy/tHnd8lZ4IkqiNNZOCIPPDna5A=="],
+
+    "@rezi-ui/native": ["@rezi-ui/native@0.1.0-alpha.31", "", {}, "sha512-yuB4KoASkRPs0AjhIY6ofB9nD3ILv3pLNNfzTD5dkY1H7y3qIv/TpDQx7KMts0duVWt+LbmhYcolsWzhxC38DA=="],
+
+    "@rezi-ui/node": ["@rezi-ui/node@0.1.0-alpha.31", "", { "dependencies": { "@rezi-ui/core": "0.1.0-alpha.31", "@rezi-ui/native": "0.1.0-alpha.31" } }, "sha512-3xAnmhBpwGCe1wEXL7/VSTLK5MAOFDRr5oFfvG8uZPuJI6cS9OePbm4uERYxEwqMh7m95hkR9oHZl2fn7jo2jA=="],
+
     "@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 
     "@types/node": ["@types/node@25.3.0", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-4K3bqJpXpqfg2XKGK9bpDTc6xO/xoUP/RBWS7AtRMug6zZFaRekiLzjVtAoZMquxoAbzBvy5nxQ7veS5eYzf8A=="],

@@ -11,6 +11,7 @@ Project-local bookmarks stored as `.url` files under `.pinly/`. No tags, no grou
 - **Rm:** Remove a pin by **id** or **path** (`pinly rm 1`, `pinly rm docs.url`).
 - **Cp:** Copy a pin’s URL to clipboard by **id** or **path** (`pinly cp 1`).
 - **Cleanup:** Remove all `.pinly` directories under the base dir (with confirmation; use `--force` to skip).
+- **TUI:** Dashboard (`pinly tui`): list pins, ↑/↓ navigate, Enter open, q quit. Uses [Rezi](https://rezitui.dev).
 
 ## Install globally
 
@@ -49,6 +50,7 @@ bun src/cli.ts <command> [options] [args]
 | `rm` | Remove a pin by **id** or **path** (e.g. `pinly rm 1`, `pinly rm docs.url`). |
 | `cp` | Copy pin URL to clipboard by **id** or **path** (e.g. `pinly cp 1`). |
 | `cleanup` | Remove all `.pinly` dirs under base (prompts for confirmation; `--force` to skip). |
+| `tui` | Dashboard TUI: list pins, ↑/↓ navigate, Enter open, q quit. Optional `--dir`. |
 
 ## Options (global)
 
@@ -69,6 +71,8 @@ pinly rm 1
 pinly rm docs.url
 pinly cleanup
 pinly cleanup --force
+pinly tui
+pinly tui --dir ./my-app
 ```
 
 ## .url format
@@ -89,3 +93,4 @@ TITLE=My title
 ## Dependencies
 
 - **Bun** — runtime
+- **TUI:** `@rezi-ui/core`, `@rezi-ui/node` (Rezi). Requires a terminal with 256-color or true-color support. If you see `engine_create` errors, try running in a real TTY or check [Rezi docs](https://rezitui.dev/docs/getting-started/install).
