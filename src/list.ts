@@ -24,7 +24,7 @@ async function findUrlFiles(pinlyDir: string): Promise<string[]> {
 }
 
 /** Collect (pinlyDir, scope) for baseDir/.pinly and each direct child dir that has .pinly (one level only, no deeper). */
-function getPinlyScopes(baseDir: string): { pinlyDir: string; scope: string }[] {
+export function getPinlyScopes(baseDir: string): { pinlyDir: string; scope: string }[] {
   const scopes: { pinlyDir: string; scope: string }[] = [];
   const own = join(baseDir, DEFAULT_PIN_DIR);
   if (existsSync(own)) scopes.push({ pinlyDir: own, scope: "" });

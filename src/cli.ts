@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-const COMMANDS = ["add", "list", "open", "rm"] as const;
+const COMMANDS = ["add", "ls", "open", "rm", "cp", "cleanup"] as const;
 
 function parseArgs(argv: string[]): { command: string; args: Record<string, string | boolean>; positional: string[] } {
   const args: Record<string, string | boolean> = {};
@@ -22,6 +22,9 @@ function parseArgs(argv: string[]): { command: string; args: Record<string, stri
     } else if (arg === "--from-clipboard" || arg === "-c") {
       args.fromClipboard = true;
       i++;
+    } else if (arg === "--force" || arg === "-f") {
+      args.force = true;
+      i++;
     } else if (arg.startsWith("-")) {
       i++;
     } else {
@@ -41,9 +44,11 @@ Usage: pinly <command> [options] [args]
 
 Commands:
   add     Add a pin (requires --title and URL or --from-clipboard)
-  list    List pins (optional query filter)
+  ls      List pins (optional query filter). Use pinly ls <id> for full details
   open    Open a pin by id or path
   rm      Remove a pin by id or path
+  cp      Copy pin URL to clipboard by id or path
+  cleanup Remove all .pinly directories under base dir (with confirmation)
 
 Options (global):
   --dir, -d <path>   Target directory (default: cwd). Pins live under <dir>/.pinly/
@@ -52,14 +57,17 @@ Options (global):
 Examples:
   pinly add --title "Docs" https://example.com
   pinly add --dir ./project --title "API" https://api.example.com
-  pinly add --title "ESS" --from-clipboard   # URL from clipboard
-  pinly list
-  pinly list 1
-  pinly list "api"
+  pinly add --title "Docs" --from-clipboard   # URL from clipboard
+  pinly ls
+  pinly ls 1
+  pinly ls "api"
   pinly open 1
+  pinly cp 1
   pinly open docs.url
   pinly rm 1
-  pinly rm ess.url
+  pinly rm docs.url
+  pinly cleanup
+  pinly cleanup --force
 `,
     add: `pinly add – add a pin
 
@@ -71,27 +79,45 @@ Usage: pinly add [--dir <path>] --title <title> [<url> | --from-clipboard]
 
 Provide either <url> or --from-clipboard. URL is normalized (https:// added if missing).
 `,
-    list: `pinly list – list pins recursively under .pinly/
+    ls: `pinly ls – list pins (alias: list)
 
-Usage: pinly list [--dir <path>] [id | query]
+Usage: pinly ls [--dir <path>] [id | query]
 
   id      Show full details of one pin (id from list).
   query   Optional filter (matches title, url, or path). Omit id to filter.
   --json  Output JSON array (or single object when id given).
 `,
+    list: `pinly list – alias for pinly ls
+`,
     open: `pinly open – open a pin in default browser
 
 Usage: pinly open [--dir <path>] <id | path>
 
-  id     Numeric id from "pinly list".
+  id     Numeric id from "pinly ls".
   path   Relative path to .url file, e.g. docs.url or subdir/doc.url
+`,
+    cp: `pinly cp – copy pin URL to clipboard
+
+Usage: pinly cp [--dir <path>] <id | path>
+
+  id     Numeric id from "pinly ls".
+  path   Relative path to .url file, e.g. docs.url or my-project/docs.url
 `,
     rm: `pinly rm – remove a pin
 
 Usage: pinly rm [--dir <path>] <id | path>
 
-  id     Numeric id from "pinly list".
-  path   Relative path to .url file, e.g. ess.url or work-local/wiki.url
+  id     Numeric id from "pinly ls".
+  path   Relative path to .url file, e.g. docs.url or my-project/docs.url
+`,
+    cleanup: `pinly cleanup – remove all .pinly directories
+
+Usage: pinly cleanup [--dir <path>] [--force]
+
+  --dir, -d <path>   Base directory (default: cwd). Removes <base>/.pinly and <base>/<child>/.pinly.
+  --force, -f         Skip confirmation prompt.
+
+Lists the .pinly dirs that will be removed, then prompts for confirmation unless --force.
 `,
   };
   console.log(help[cmd ?? ""] ?? help[""]);
@@ -105,7 +131,8 @@ async function main(): Promise<void> {
     process.exit(args.help ? 0 : 1);
   }
 
-  if (!COMMANDS.includes(command as (typeof COMMANDS)[number])) {
+  const normalizedCommand = command === "list" ? "ls" : command;
+  if (!COMMANDS.includes(normalizedCommand as (typeof COMMANDS)[number])) {
     console.error(`pinly: unknown command '${command}'`);
     printHelp();
     process.exit(1);
@@ -135,7 +162,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "list") {
+  if (normalizedCommand === "ls") {
     const first = positional[0];
     const id = first != null && /^\d+$/.test(first) ? parseInt(first, 10) : undefined;
     const query = id == null && first != null ? first : undefined;
@@ -149,7 +176,18 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "open") {
+  if (normalizedCommand === "cp") {
+    const target = positional[0];
+    if (!target) {
+      console.error("pinly cp: need <id> or <path>");
+      process.exit(1);
+    }
+    const { runCp } = await import("./cp");
+    await runCp({ dir: args.dir as string | undefined, target });
+    return;
+  }
+
+  if (normalizedCommand === "open") {
     const target = positional[0];
     if (!target) {
       console.error("pinly open: need <id> or <path>");
@@ -160,7 +198,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "rm") {
+  if (normalizedCommand === "rm") {
     const target = positional[0];
     if (!target) {
       console.error("pinly rm: need <id> or <path>");
@@ -168,6 +206,15 @@ async function main(): Promise<void> {
     }
     const { runRm } = await import("./rm");
     await runRm({ dir: args.dir as string | undefined, target });
+    return;
+  }
+
+  if (normalizedCommand === "cleanup") {
+    const { runCleanup } = await import("./cleanup");
+    await runCleanup({
+      dir: args.dir as string | undefined,
+      force: args.force as boolean,
+    });
     return;
   }
 }
