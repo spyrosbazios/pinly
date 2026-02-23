@@ -72,16 +72,48 @@ function filterEntries(entries: ListEntry[], query: string): ListEntry[] {
   );
 }
 
+const URL_TRUNCATE = 48;
+
+function truncateUrl(url: string): string {
+  if (url.length <= URL_TRUNCATE) return url;
+  return url.slice(0, URL_TRUNCATE - 1) + "…";
+}
+
 function formatLine(e: ListEntry): string {
-  return `${String(e.id).padStart(4)}  ${e.title.slice(0, 40).padEnd(42)}  ${e.url}`;
+  return `${String(e.id).padStart(4)}  ${e.title.slice(0, 40).padEnd(42)}  ${truncateUrl(e.url)}`;
+}
+
+function formatPinDetail(e: ListEntry): string {
+  return [
+    `id:      ${e.id}`,
+    `title:   ${e.title}`,
+    `path:    ${e.relPath}`,
+    `url:     ${e.url}`,
+  ].join("\n");
 }
 
 export async function runList(args: {
   dir?: string;
   query?: string;
+  id?: number;
   json?: boolean;
 }): Promise<void> {
   const entries = await loadListEntries(args.dir ?? process.cwd());
+
+  if (args.id != null) {
+    const entry = entries.find((e) => e.id === args.id);
+    if (!entry) {
+      console.error(`pinly list: no pin with id ${args.id}`);
+      process.exit(1);
+    }
+    if (args.json) {
+      console.log(JSON.stringify(entry, null, 2));
+    } else {
+      console.log(formatPinDetail(entry));
+    }
+    return;
+  }
+
   const list = args.query ? filterEntries(entries, args.query) : entries;
 
   if (args.json) {

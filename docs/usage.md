@@ -5,7 +5,21 @@
 - Pins live under **`.pinly/`** in a directory you choose (default: current directory).
 - `pinly add` writes to `<dir>/.pinly/<slug>.url`. The slug is derived from the title (lowercase, hyphens).
 
-## How `pinly list` works
+## Adding from clipboard
+
+- Use **`--from-clipboard`** or **`-c`** when the URL is in the clipboard (e.g. long URLs with `?` or `&` that are awkward to quote in the shell):
+  ```bash
+  pinly add --title "ESS" -c
+  ```
+- **macOS:** uses `pbpaste`. **Linux:** uses `xclip -o` or `xsel --clipboard --output`.
+
+## Listing and pin details
+
+- **`pinly list`** — Table of all pins. Long URLs are truncated (e.g. to 48 chars) so the table stays readable.
+- **`pinly list <id>`** — Full details for one pin: id, title, path, and full URL (no truncation).
+- **`pinly list "query"`** — Same table, filtered by substring on title, URL, or path (use when the first argument is not a number).
+
+## How `pinly list` discovers pins
 
 - **Base directory** is the current directory (or `--dir <path>`).
 - Pins are collected from:
@@ -20,6 +34,11 @@
 - **By path:**
   - `pinly open wiki.url` — opens `<base>/.pinly/wiki.url`.
   - `pinly open work-local/wiki.url` — opens `<base>/work-local/.pinly/wiki.url`.
+
+## Removing pins
+
+- **`pinly rm <id>`** — Remove the pin with that id (from `pinly list`).
+- **`pinly rm <path>`** — Remove by path, e.g. `ess.url` or `work-local/wiki.url` (same resolution as `open`).
 
 ## Filtering
 
