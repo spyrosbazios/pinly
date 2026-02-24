@@ -62,7 +62,7 @@ export async function loadListEntries(dir: string): Promise<ListEntry[]> {
   return raw.map((r, i) => ({ ...r, id: i + 1 }));
 }
 
-function filterEntries(entries: ListEntry[], query: string): ListEntry[] {
+export function filterEntries(entries: ListEntry[], query: string): ListEntry[] {
   const q = query.toLowerCase();
   return entries.filter(
     (e) =>
