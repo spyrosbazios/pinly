@@ -1,83 +1,162 @@
-# pinly
+# Pinly
 
-Project-local bookmarks stored as `.url` files under `.pinly/`. No tags, no groups — one pin = one title + URL. Pins live next to your code and can be git-tracked per project.
+**Project-local bookmarks as code.** Store URLs alongside your projects in `.url` files under `.pinly/` directories. Track them with git, share them with your team, and keep your bookmarks where they belong — next to your code.
 
-## PoC
+No tags. No groups. No external services. Just one pin = one title + URL.
 
-- **Storage:** `<dir>/.pinly/*.url` (optional `--dir`, default: cwd)
-- **Add:** `pinly add --title "<title>" <url>` or `pinly add --title "<title>" --from-clipboard` (URL from clipboard)
-- **Ls:** List pins (`pinly ls`; alias `list`). URLs truncated in table; `pinly ls <id>` for full details. Optional text filter. `--json` for machine output.
-- **Open:** Open a pin by **id** or **path** (e.g. `docs.url` or `my-project/docs.url` when listing from parent).
-- **Rm:** Remove a pin by **id** or **path** (`pinly rm 1`, `pinly rm docs.url`).
-- **Cp:** Copy a pin’s URL to clipboard by **id** or **path** (`pinly cp 1`).
-- **Cleanup:** Remove all `.pinly` directories under the base dir (with confirmation; use `--force` to skip).
-- **TUI:** Dashboard (`pinly tui`): list pins, ↑/↓ navigate, Enter open, q quit. Uses [Rezi](https://rezitui.dev).
+## Why Pinly?
 
-## Install globally
+- **Project-scoped**: Bookmarks live in your project's `.pinly/` directory
+- **Git-trackable**: `.url` files are plain text — commit them, diff them, review them
+- **Fast CLI**: Add, list, open, and manage pins from your terminal
+- **UGLY TUI**: Interactive dashboard powered by [Rezi](https://rezitui.dev)
+- **Clipboard integration**: Quick copy/paste workflows
+- **Fuzzy search**: Find pins by title or URL
 
-From the repo root (requires [Bun](https://bun.sh)):
+## Installation
+
+### Prerequisites
+
+- [Bun](https://bun.sh) runtime
+
+### Install globally
 
 ```bash
-cd /path/to/pinly
+git clone https://github.com/yourusername/pinly.git
+cd pinly
 bun install
 bun link
 ```
 
-After that, `pinly` is on your PATH:
+After linking, `pinly` is available globally:
 
 ```bash
-pinly add --title "Docs" https://example.com
-pinly ls
-pinly open 1
+pinly --help
 ```
 
-To uninstall: `bun unlink pinly` (from anywhere).
-
-## Run without global install
+### Run without installing
 
 ```bash
-bun install
-bun src/cli.ts <command> [options] [args]
+bun src/cli.ts <command> [options]
+```
+
+## Quick Start
+
+```bash
+# Add a bookmark
+pinly add --title "Bun Docs" https://bun.sh/docs
+
+# List all pins in current directory
+pinly ls
+
+# Open a pin by ID
+pinly open 1
+
+# Copy URL to clipboard
+pinly cp 1
+
+# Remove a pin
+pinly rm 1
+
+# Launch the interactive TUI
+pinly tui
 ```
 
 ## Commands
 
-| Command | Description |
-|--------|-------------|
-| `add` | Add a pin. Requires `--title` and URL (or `--from-clipboard` / `-c` to use clipboard). Writes to `<dir>/.pinly/<slug>.url` (collision: `-2`, `-3`, …). |
-| `ls` | List pins (alias: `list`). URLs truncated; `pinly ls <id>` for full details. Optional `[query]` filter. `--json` for machine output. |
-| `open` | Open a pin in default browser by **id** or **path** (e.g. `docs.url` or `my-project/docs.url`). |
-| `rm` | Remove a pin by **id** or **path** (e.g. `pinly rm 1`, `pinly rm docs.url`). |
-| `cp` | Copy pin URL to clipboard by **id** or **path** (e.g. `pinly cp 1`). |
-| `cleanup` | Remove all `.pinly` dirs under base (prompts for confirmation; `--force` to skip). |
-| `tui` | Dashboard TUI: list pins, ↑/↓ navigate, Enter open, q quit. Optional `--dir`. |
+| Command   | Description                                                                                         |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| `add`     | Create a new pin. Use `--title` and a URL, or `--from-clipboard` / `-c` to read URL from clipboard. |
+| `ls`      | List all pins. Optional `[query]` filter. Use `--json` for machine-readable output.                 |
+| `open`    | Open pin in default browser by ID or path (e.g., `docs.url`).                                       |
+| `rm`      | Remove a pin by ID or path.                                                                         |
+| `cp`      | Copy pin's URL to clipboard by ID or path.                                                          |
+| `cleanup` | Remove all `.pinly` directories (with confirmation). Use `--force` to skip confirmation.            |
+| `tui`     | Launch interactive dashboard. Navigate with ↑/↓, open with Enter, quit with `q`.                    |
 
-## Options (global)
+## Global Options
 
-- `--dir`, `-d <path>` — Base directory (default: current directory). Pins are under `<path>/.pinly/` and `<path>/<child>/.pinly/`.
-- `--help`, `-h` — Show help.
+| Option               | Description                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `--dir`, `-d <path>` | Base directory (default: current directory). Searches `<path>/.pinly/` and `<path>/<child>/.pinly/`. |
+| `--help`, `-h`       | Show help for any command.                                                                           |
 
-## Examples
+## Usage Examples
+
+### Adding pins
 
 ```bash
-pinly add --title "Bun" https://bun.sh
-pinly add --dir ./my-app --title "API" https://api.example.com
+# Add with URL argument
+pinly add --title "React Docs" https://react.dev
+
+# Add from clipboard
+# (copy a URL first)
+pinly add --title "API Reference" --from-clipboard
+pinly add -t "API Reference" -c  # shorthand
+
+# Add to specific project
+pinly add --dir ./my-app --title "GitHub" https://github.com
+```
+
+### Listing and searching
+
+```bash
+# List all pins
 pinly ls
+
+# Get full details for a specific pin
 pinly ls 1
+
+# Filter by text (searches titles and URLs)
 pinly ls "api"
+pinly ls "github.com"
+
+# JSON output for scripts
+pinly ls --json
+```
+
+### Opening and copying
+
+```bash
+# Open by ID
 pinly open 1
+
+# Open by filename
+pinly open react-docs.url
+
+# Copy URL to clipboard
 pinly cp 1
-pinly rm 1
-pinly rm docs.url
+```
+
+### Cleaning up
+
+```bash
+# Remove all .pinly directories (prompts first)
 pinly cleanup
+
+# Force cleanup without confirmation
 pinly cleanup --force
+```
+
+### Using the TUI
+
+```bash
+# Launch dashboard
 pinly tui
+
+# TUI for specific directory
 pinly tui --dir ./my-app
 ```
 
-## .url format
+**TUI Controls:**
 
-Each pin is a standard `[InternetShortcut]` file with optional `TITLE=`:
+- ↑/↓ — Navigate pins
+- Enter — Open selected pin
+- q — Quit
+
+## Storage Format
+
+Each pin is a standard `[InternetShortcut]` file stored in `.pinly/<slug>.url`:
 
 ```ini
 [InternetShortcut]
@@ -85,12 +164,69 @@ URL=https://example.com
 TITLE=My title
 ```
 
-## Docs
+This format is:
 
-- [Usage & behavior](docs/usage.md)
-- [Design (PoC)](docs/design.md)
+- ✅ Human-readable
+- ✅ Git-friendly (text-based, diffable)
+- ✅ Compatible with other tools
+- ✅ Portable across systems
 
-## Dependencies
+### Directory structure
 
-- **Bun** — runtime
-- **TUI:** `@rezi-ui/core`, `@rezi-ui/node` (Rezi). Requires a terminal with 256-color or true-color support. If you see `engine_create` errors, try running in a real TTY or check [Rezi docs](https://rezitui.dev/docs/getting-started/install).
+```
+my-project/
+├── .pinly/
+│   ├── bun-docs.url
+│   ├── react-docs.url
+│   └── api-reference.url
+├── src/
+└── package.json
+```
+
+## Multi-project Support
+
+Pinly can manage pins across multiple projects from a parent directory:
+
+```bash
+# From parent directory
+cd ~/projects
+
+# Lists pins from all child projects
+pinly ls
+
+# Open by path
+pinly open my-project/bun-docs.url
+```
+
+## Development
+
+```bash
+# Install dependencies
+bun install
+
+# Run CLI in dev mode with hot reload
+bun run dev:cli
+
+# Run TUI in dev mode
+bun run dev
+
+# Type check
+bun run typecheck
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT
+
+## Acknowledgments
+
+- [Bun](https://bun.sh) — Fast JavaScript runtime
+- [Rezi](https://rezitui.dev) — Terminal UI framework
+
+---
+
+Made with ❤️ by [Your Name]
