@@ -35,3 +35,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # local pins in this repo (optional; remove if you want to track .pinly here)
 .pinly
+
+
+.tmuxp.yaml

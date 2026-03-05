@@ -1,0 +1,81 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@rezi-ui/core':
+        specifier: ^0.1.0-alpha.55
+        version: 0.1.0-alpha.55
+      '@rezi-ui/node':
+        specifier: ^0.1.0-alpha.55
+        version: 0.1.0-alpha.55
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+    devDependencies:
+      '@types/bun':
+        specifier: latest
+        version: 1.3.10
+
+packages:
+
+  '@rezi-ui/core@0.1.0-alpha.55':
+    resolution: {integrity: sha512-In/MS1hW2alGJHPaC4ua6vFanEyxPs2KY/ir5H9Dv33wTBSl8QfUMRPAZ8o2y5hoNG99vT2Eo5aiys+fh8b+IA==}
+    engines: {bun: '>=1.3.0', node: '>=18'}
+
+  '@rezi-ui/native@0.1.0-alpha.55':
+    resolution: {integrity: sha512-3S+9V4xGrt+Iglf7Rv26ZYGzJw/Nc33ikqZAsjQw988kDlhtdE1fhG77sbASgMOv7Ktwmx3Xbvr0MziwMxPRkA==}
+    engines: {bun: '>=1.3.0', node: '>=18'}
+
+  '@rezi-ui/node@0.1.0-alpha.55':
+    resolution: {integrity: sha512-qqR4A0ok9qU/ZxNJpKh4nT9F3PCx6F8VmqDmVRuU3AU4OdkSavM3m1NM63WN/OIzL65pA6+iNaSsdQb1QFzTPA==}
+    engines: {bun: '>=1.3.0', node: '>=18'}
+
+  '@types/bun@1.3.10':
+    resolution: {integrity: sha512-0+rlrUrOrTSskibryHbvQkDOWRJwJZqZlxrUs1u4oOoTln8+WIXBPmAuCF35SWB2z4Zl3E84Nl/D0P7803nigQ==}
+
+  '@types/node@25.3.3':
+    resolution: {integrity: sha512-DpzbrH7wIcBaJibpKo9nnSQL0MTRdnWttGyE5haGwK86xgMOkFLp7vEyfQPGLOJh5wNYiJ3V9PmUMDhV9u8kkQ==}
+
+  bun-types@1.3.10:
+    resolution: {integrity: sha512-tcpfCCl6XWo6nCVnpcVrxQ+9AYN1iqMIzgrSKYMB/fjLtV2eyAVEg7AxQJuCq/26R6HpKWykQXuSOq/21RYcbg==}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  undici-types@7.18.2:
+    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
+
+snapshots:
+
+  '@rezi-ui/core@0.1.0-alpha.55': {}
+
+  '@rezi-ui/native@0.1.0-alpha.55': {}
+
+  '@rezi-ui/node@0.1.0-alpha.55':
+    dependencies:
+      '@rezi-ui/core': 0.1.0-alpha.55
+      '@rezi-ui/native': 0.1.0-alpha.55
+
+  '@types/bun@1.3.10':
+    dependencies:
+      bun-types: 1.3.10
+
+  '@types/node@25.3.3':
+    dependencies:
+      undici-types: 7.18.2
+
+  bun-types@1.3.10:
+    dependencies:
+      '@types/node': 25.3.3
+
+  typescript@5.9.3: {}
+
+  undici-types@7.18.2: {}

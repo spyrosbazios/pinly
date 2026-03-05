@@ -4,17 +4,26 @@ import { createNodeApp } from "@rezi-ui/node";
 import { filterEntries, loadListEntries, type ListEntry } from "./list";
 import { runOpen } from "./open";
 import { resolveDir } from "./dir";
-import { readClipboard } from "./clipboard";
 import { runAdd, normalizeUrl } from "./add";
 
-const FOOTER_HINT =
-  "Tab filter/list · ! add (title from search, URL from clipboard) · Enter open · a add when in list · q quit";
+const FOOTER_HINT = "Enter to open · ! to create · q to quit";
+
+type ModalState =
+  | { type: "none" }
+  | { type: "askUrl"; title: string }
+  | { type: "askTitle"; url: string };
 
 type State = {
   entries: ListEntry[];
   dir: string;
   query: string;
+  modal: ModalState;
+  modalInput: string;
 };
+
+function looksLikeUrl(s: string): boolean {
+  return s.includes(".") || s.includes("/") || s.startsWith("http");
+}
 
 function parseTuiArgs(argv: string[]): string {
   for (let i = 0; i < argv.length; i++) {
@@ -33,6 +42,8 @@ const initialState: State = {
   entries: initialEntries,
   dir: baseDir,
   query: "",
+  modal: { type: "none" },
+  modalInput: "",
 };
 
 const app = createNodeApp<State>({
@@ -41,13 +52,32 @@ const app = createNodeApp<State>({
 });
 
 app.view((state) => {
-  const displayedEntries = state.query.trim()
-    ? filterEntries(state.entries, state.query.trim())
+  const query = state.query.trim();
+  const displayedEntries = query
+    ? filterEntries(state.entries, query)
     : state.entries;
 
   const listContent =
     displayedEntries.length === 0
-      ? ui.text("No pins.", { style: { dim: true } })
+      ? ui.box(
+          {
+            title: "No pins found",
+            border: "rounded",
+            p: 2,
+            alignSelf: "center",
+          },
+          [
+            ui.empty("Hit ! to create a new pin", {
+              description: "",
+              icon: "ui.expand",
+              action: ui.button({
+                id: "create",
+                p: 2,
+                label: "Create a new pin",
+              }),
+            }),
+          ],
+        )
       : ui.virtualList({
           id: "pins",
           items: displayedEntries,
@@ -68,53 +98,127 @@ app.view((state) => {
         value: state.query,
         onInput: (value) => app.update((s) => ({ ...s, query: value })),
         placeholder: "Filter by title, URL, or path…",
+        dsSize: "lg",
       }),
     ]),
   ]);
 
   const resultsSection = ui.box({ p: 1, border: "none" }, [listContent]);
 
-  return ui.appShell({
+  const mainContent = ui.appShell({
     header: ui.text("pinly", { style: { bold: true } }),
     body: ui.focusTrap(
       {
         id: "main",
-        active: true,
+        active: state.modal.type === "none",
         initialFocus: "search",
       },
       [ui.column({ gap: 1 }, [filterSection, resultsSection])],
     ),
     footer: ui.text(FOOTER_HINT, { style: { dim: true } }),
   });
+
+  // Modal layer
+  if (state.modal.type === "none") {
+    return mainContent;
+  }
+
+  const closeModal = () =>
+    app.update((s) => ({ ...s, modal: { type: "none" }, modalInput: "" }));
+
+  const createPin = async (title: string, url: string) => {
+    await runAdd({ dir: state.dir, title, url });
+    const newEntries = await loadListEntries(state.dir);
+    app.update((s) => ({
+      ...s,
+      entries: newEntries,
+      query: "",
+      modal: { type: "none" },
+      modalInput: "",
+    }));
+  };
+
+  const handleModalSubmit = () => {
+    if (state.modal.type === "askUrl") {
+      createPin(state.modal.title, normalizeUrl(state.modalInput));
+    } else if (state.modal.type === "askTitle") {
+      createPin(state.modalInput.trim() || "Untitled", state.modal.url);
+    }
+  };
+
+  const modalTitle =
+    state.modal.type === "askUrl"
+      ? `Enter URL for "${state.modal.title}"`
+      : "Enter pin title";
+
+  const modalPlaceholder =
+    state.modal.type === "askUrl" ? "https://..." : "Pin name...";
+
+  const modalContent = ui.modal({
+    id: "create-pin-modal",
+    title: modalTitle,
+    content: ui.input({
+      id: "modal-input",
+      value: state.modalInput,
+      onInput: (value) => app.update((s) => ({ ...s, modalInput: value })),
+      placeholder: modalPlaceholder,
+    }),
+    actions: [
+      ui.button({
+        id: "submit-btn",
+        label: "Create",
+        intent: "primary",
+        onPress: handleModalSubmit,
+      }),
+      ui.button({ id: "cancel-btn", label: "Cancel", onPress: closeModal }),
+    ],
+    onClose: closeModal,
+    initialFocus: "modal-input",
+    returnFocusTo: "search",
+  });
+
+  return ui.layers({}, [mainContent, modalContent]);
 });
 
-function doAddFromState(ctx: {
-  state: State;
-  update: (u: (s: State) => State) => void;
-}) {
-  const { dir, query } = ctx.state;
-  const title = query.trim() || "Untitled";
-  (async () => {
-    const raw = (await readClipboard()).trim();
-    if (!raw || /\s/.test(raw)) return;
-    const url = normalizeUrl(raw);
-    if (!url.startsWith("http")) return;
-    try {
-      await runAdd({ dir, title, url });
-      const newEntries = await loadListEntries(dir);
-      ctx.update((s) => ({ ...s, entries: newEntries, query: "" }));
-    } catch {
-      // runAdd failed (e.g. write error)
-    }
-  })();
-}
-
 app.keys({
-  q: () => app.stop(),
-  "!": (ctx) => doAddFromState(ctx),
-  a: (ctx) => {
-    if (ctx.focusedId === "search") return; // let "a" type in search
-    doAddFromState(ctx);
+  q: (ctx) => {
+    if (ctx.state.modal.type === "none") {
+      app.stop();
+    }
+  },
+  escape: (ctx) => {
+    if (ctx.state.modal.type !== "none") {
+      app.update((s) => ({ ...s, modal: { type: "none" }, modalInput: "" }));
+    }
+  },
+  "!": (ctx) => {
+    // if (ctx.state.modal.type !== "none") return;
+    // if (ctx.focusedId !== "search") return;
+
+    const { query, entries, dir } = ctx.state;
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    const filtered = filterEntries(entries, trimmed);
+
+    if (filtered.length > 0) {
+      runOpen({ dir, target: String(filtered[0].id) });
+      return;
+    }
+
+    if (looksLikeUrl(trimmed)) {
+      ctx.update((s) => ({
+        ...s,
+        modal: { type: "askTitle", url: normalizeUrl(trimmed) },
+        modalInput: "",
+      }));
+    } else {
+      ctx.update((s) => ({
+        ...s,
+        modal: { type: "askUrl", title: trimmed },
+        modalInput: "",
+      }));
+    }
   },
 });
 

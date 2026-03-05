@@ -1,8 +1,14 @@
 {
   "name": "pinly",
-  "module": "src/cli.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun --hot src/cli.ts tui",
+    "dev:cli": "bun --hot src/cli.ts",
+    "start": "bun src/cli.ts",
+    "tui": "bun src/cli.ts tui",
+    "typecheck": "tsc --noEmit"
+  },
   "bin": {
     "pinly": "src/cli.ts"
   },
@@ -13,7 +19,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@rezi-ui/core": "^0.1.0-alpha.31",
-    "@rezi-ui/node": "^0.1.0-alpha.31"
+    "@rezi-ui/core": "^0.1.0-alpha.55",
+    "@rezi-ui/node": "^0.1.0-alpha.55"
   }
 }
