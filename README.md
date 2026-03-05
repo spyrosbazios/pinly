@@ -228,5 +228,3 @@ MIT
 - [Rezi](https://rezitui.dev) — Terminal UI framework
 
 ---
-
-Made with ❤️ by [Your Name]
